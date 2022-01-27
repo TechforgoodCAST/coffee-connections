@@ -1,0 +1,5 @@
+Flask
+zappa
+pydantic
+requests
+boto3
