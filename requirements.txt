@@ -3,3 +3,4 @@ zappa
 pydantic
 requests
 boto3
+pyhumps

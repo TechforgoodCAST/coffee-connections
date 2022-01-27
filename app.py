@@ -1,7 +1,9 @@
-import flask
 from flask import Flask
 import toml
 import logging
+
+from models import Person, Organization
+
 
 app = Flask(__name__)
 # load the config file from the TOML formatted file (not checked into repository)
@@ -12,7 +14,8 @@ app.config.from_file('config.toml', toml.load)
 @app.get('/')
 def home_handler():
     # TODO what should this page be. Is it a signup page?
-    return 'homepage'
+    person = Person({'name':'Chris'})
+    return person.as_schema()
 
 
 @app.get('/users/add')
@@ -35,6 +38,10 @@ def login__form_handler():
 def login_handler():
     # TODO login using Auth0
     return 'login'
+
+
+
+
 
 # TODO auth decorator
 @app.get('/admin')
