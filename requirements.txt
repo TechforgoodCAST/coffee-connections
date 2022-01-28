@@ -4,3 +4,5 @@ pydantic
 requests
 boto3
 pyhumps
+authlib
+six

@@ -1,4 +1,11 @@
-from flask import Flask
+from flask import Flask, redirect
+
+from functools import wraps
+from authlib.integrations.flask_client import OAuth
+from six.moves.urllib.parse import urlencode
+
+
+
 import toml
 import logging
 
@@ -6,8 +13,29 @@ from models import Person, Organization
 
 
 app = Flask(__name__)
+app.secret_key = 'testingthisout'
 # load the config file from the TOML formatted file (not checked into repository)
 app.config.from_file('config.toml', toml.load)
+
+
+
+oauth = OAuth(app)
+
+
+
+auth0 = oauth.register(
+    'auth0',
+    client_id = app.config['AUTH0_CLIENT_ID'],
+    client_secret = app.config['AUTH0_CLIENT_SECRET'],
+    api_base_url = app.config['AUTH0_API_BASE_URL'],
+    access_token_url = app.config['AUTH0_ACCESS_TOKEN_URL'],
+    authorize_url = app.config['AUTH0_AUTHORIZE_URL'],
+    client_kwargs={
+        'scope': 'openid profile email',
+    },
+)
+
+
 
 
 
@@ -32,13 +60,36 @@ def typeform_webhook_handler():
 @app.get('/login')
 def login__form_handler():
     # TODO login using Auth0
-    return 'login'
+    logging.warn(auth0)
+    return auth0.authorize_redirect(redirect_uri='http://localhost:5000/callback')
+
+
 
 @app.post('/login')
 def login_handler():
     # TODO login using Auth0
     return 'login'
 
+
+
+
+@app.route('/callback')
+def callback_handler():
+    # Handles response from token endpoint
+    auth0.authorize_access_token()
+    resp = auth0.get('userinfo')
+    userinfo = resp.json()
+
+    # Store the user information in flask session.
+    payload = userinfo
+    userinfo = {
+        'user_id': userinfo['sub'],
+        'name': userinfo['name'],
+        'picture': userinfo['picture']
+    }
+    logging.warn(payload)
+    logging.warn(userinfo)
+    return redirect('/admin')
 
 
 
