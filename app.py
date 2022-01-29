@@ -1,4 +1,4 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, url_for
 
 from functools import wraps
 from authlib.integrations.flask_client import OAuth
@@ -39,6 +39,10 @@ auth0 = oauth.register(
 
 
 
+
+
+
+
 @app.get('/')
 def home_handler():
     # TODO what should this page be. Is it a signup page?
@@ -60,15 +64,14 @@ def typeform_webhook_handler():
 @app.get('/login')
 def login__form_handler():
     # TODO login using Auth0
-    logging.warn(auth0)
     return auth0.authorize_redirect(redirect_uri='http://localhost:5000/callback')
 
 
 
-@app.post('/login')
-def login_handler():
-    # TODO login using Auth0
-    return 'login'
+@app.get('/logout')
+def logout_handler():
+    params = {'returnTo': url_for('home_handler', _external=True), 'client_id': app.config['AUTH0_CLIENT_ID']}
+    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
 
 
 
