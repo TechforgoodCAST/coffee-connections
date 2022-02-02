@@ -1,13 +1,12 @@
 import jwt
 import logging
 
+
 def check_user_privileges(userobj, config, privilege):
-    logging.warn("CHECKING PRIVLEGES")
     userobj['privileges'] = []
     if privilege.upper() in config:
         if userobj['email'] in config[privilege.upper()]:
             userobj['privileges'].append(privilege)
-    logging.warn(userobj)
     return userobj
 
 
@@ -22,7 +21,6 @@ def get_user_from_cookie(request, config, privilege=None):
     else:
         userobj = None
     if userobj:
-        logging.warn(privilege)
         if privilege:
             userobj = check_user_privileges(userobj, config, privilege)
     if userobj:
