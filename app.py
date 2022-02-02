@@ -1,29 +1,27 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, request, make_response
 
 from functools import wraps
 from authlib.integrations.flask_client import OAuth
 from six.moves.urllib.parse import urlencode
-
+import jwt
 
 
 import toml
 import logging
 
+
+from common import check_user, requires_privilege
+
 from models import Person, Organization
 
 
 app = Flask(__name__)
-app.secret_key = 'testingthisout'
+app.secret_key = app.config['SECRET_KEY']
 # load the config file from the TOML formatted file (not checked into repository)
 app.config.from_file('config.toml', toml.load)
 
 
-
-oauth = OAuth(app)
-
-
-
-auth0 = oauth.register(
+auth0 = OAuth(app).register(
     'auth0',
     client_id = app.config['AUTH0_CLIENT_ID'],
     client_secret = app.config['AUTH0_CLIENT_SECRET'],
@@ -38,15 +36,17 @@ auth0 = oauth.register(
 
 
 
-
-
-
-
-
 @app.get('/')
-def home_handler():
-    # TODO what should this page be. Is it a signup page?
-    person = Person({'name':'Chris'})
+@check_user
+def home_handler(userobj):
+    if userobj:
+        return 'home' + ' | ' + userobj['given_name']
+    return 'home'
+
+
+@app.get('/schema')
+def schema_handler():
+    person = Person({'name':'blank'})
     return person.as_schema()
 
 
@@ -59,99 +59,132 @@ def typeform_webhook_handler():
     return 'webook from typeform'
 
 
+@app.get('/users/confirm')
+def confirm_user_handler():
+    # TODO notify Slack of confirmation
+    return 'email confirmation'
+
 
 
 @app.get('/login')
-def login__form_handler():
-    # TODO login using Auth0
+def login__handler():
     return auth0.authorize_redirect(redirect_uri='http://localhost:5000/callback')
 
 
 
 @app.get('/logout')
 def logout_handler():
-    params = {'returnTo': url_for('home_handler', _external=True), 'client_id': app.config['AUTH0_CLIENT_ID']}
-    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
-
-
+    params = {'returnTo': 'http://localhost:5000/', 'client_id': app.config['AUTH0_CLIENT_ID']}
+    resp = make_response(redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params)))
+    resp.delete_cookie('cast_user')
+    return resp
 
 
 @app.route('/callback')
 def callback_handler():
     # Handles response from token endpoint
-    auth0.authorize_access_token()
-    resp = auth0.get('userinfo')
-    userinfo = resp.json()
-
-    # Store the user information in flask session.
-    payload = userinfo
-    userinfo = {
-        'user_id': userinfo['sub'],
-        'name': userinfo['name'],
-        'picture': userinfo['picture']
-    }
-    logging.warn(payload)
-    logging.warn(userinfo)
-    return redirect('/admin')
-
+    try:
+        auth0.authorize_access_token()
+        resp = auth0.get('userinfo')
+        userinfo = resp.json()
+        if userinfo['email'] in app.config['USERS']:
+            token = jwt.encode(payload=userinfo, key=app.config['JWT_SECRET'], algorithm='HS256')
+            response = make_response(redirect('/admin'))
+            response.set_cookie('cast_user', token)
+            return response
+        else:
+            return redirect('/not-allowed')
+    except:
+        return redirect('/')
 
 
+@app.get('/not-allowed')
+@check_user
+def not_allowed_handler(userobj):
+    return 'you\'re not allowed to do that' +  ' | ' + userobj['given_name']
 
-# TODO auth decorator
+
 @app.get('/admin')
-def admin_home_handler():
+@requires_privilege('admins')
+def admin_home_handler(userobj):
     # TODO think about what this should contain? Stats? Recent actions?
-    return 'admin home'
+    return 'admin/ home '+ ' | ' + userobj['given_name']
 
 
 @app.get('/admin/users')
-def admin_users_handler():
-    # TODO think about what this should contain? Stats? Recent actions?
-    return 'admin home'
+@requires_privilege('admins')
+def admin_users_handler(userobj):
+    # TODO list of users with sorting
+    return 'admin/ list users'+ ' | ' + userobj['given_name']
 
 
+@app.get('/admin/users/edit/<string:uid>')
+@requires_privilege('admins')
+def admin_user_edit_handler(userobj, uid):
+    # TODO edit of a user of coffee connections
+    return 'admin/ edit user' + uid + ' | ' + userobj['given_name']
 
-# TODO auth decorator
+
+@app.get('/admin/users/view/<string:uid>')
+@requires_privilege('admins')
+def admin_user_view_handler(userobj, uid):
+    # TODO view of a user of coffee connections
+    return 'admin/ view user' + uid + ' | ' + userobj['given_name']
+
+
+@app.get('/admin/users/approve/<string:uid>')
+@requires_privilege('admins')
+def admin_user_approve_handler(userobj, uid):
+    # TODO approve of a user of coffee connections
+    return 'admin/ approve user' + uid + ' | ' + userobj['given_name']
+
+
 @app.get('/admin/matches/create')
+@requires_privilege('admins')
 # TODO think about what this does. Does it create a new match table? Does it populate with guessed matches
-def admin_create_matches_handler():
-    return 'match creation'
+def admin_create_matches_handler(userobj):
+    return 'admin/ create matches '+ ' | ' + userobj['given_name']
 
 
-# TODO auth decorator
 @app.get('/admin/matches/view')
-def admin_view_matches_handler():
+@requires_privilege('admins')
+def admin_view_matches_handler(userobj):
     # TODO show matches
-    return 'match view'
+    return 'admin/ view matches '+ ' | ' + userobj['given_name']
 
 
-# TODO auth decorator
 @app.get('/admin/matches/edit')
-def admin_edit_matches_handler():
+@requires_privilege('admins')
+def admin_edit_matches_handler(userobj):
     # TODO edit matches
-    return 'match edit'
+    return 'admin/ edit matches '+ ' | ' + userobj['given_name']
 
 
-# TODO auth decorator
 @app.get('/admin/matches/test')
-def admin_test_matches_handler():
+@requires_privilege('admins')
+def admin_test_matches_handler(userobj):
     # TODO show form which will approve the sending, make it have some friction
-    return 'match send'
+        return 'admin/ send test matches '+ ' | ' + userobj['given_name']
 
 
-# TODO auth decorator
 @app.post('/admin/matches/test')
-def admin_test_matches_confirm_handler():
-    return 'match send confirmation step'
+@requires_privilege('admins')
+def admin_test_matches_confirm_handler(userobj):
+    return 'admin/ send test matches confirmed '+ ' | ' + userobj['given_name']
 
 
-# TODO auth decorator
+# TODO email permission decorator
 @app.get('/admin/matches/send')
-def admin_send_matches_handler():
+@requires_privilege('senders')
+def admin_send_matches_handler(userobj):
     # TODO show form which will approve the sending, make it have some friction
-    return 'match send'
+    return 'admin/ send live matches '+ ' | ' + userobj['given_name']
 
-# TODO auth decorator
+
+# TODO email permission decorator
 @app.post('/admin/matches/send')
-def admin_send_matches_confirm_handler():
-    return 'match send confirmation step'
+@requires_privilege('senders')
+def admin_send_matches_confirm_handler(userobj):
+    return 'admin/ send live matches confirmed '+ ' | ' + userobj['given_name']
+
+
