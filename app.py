@@ -54,6 +54,7 @@ def typeform_webhook_handler():
     # TODO persist the model somewhere like Stein
     # TODO fire signup action
     # TODO notify Slack of new signup
+    # TODO think again if we're not using typeform
     return 'webook from typeform'
 
 
