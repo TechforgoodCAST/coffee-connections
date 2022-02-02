@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% set page_title = 'Homepage' %}
+
+{% block main%}
+    <p>Admin home / {{userobj.given_name}}</p>
+    <p>{{content}}</p>
+{% endblock %}
