@@ -38,7 +38,7 @@ auth0 = OAuth(app).register(
 
 @app.get('/')
 @check_user
-@templated('index')
+@templated('home')
 def home_handler(userobj):
     return {'message': 'hello'}
 
@@ -98,16 +98,17 @@ def callback_handler():
 
 @app.get('/not-allowed')
 @check_user
+@templated('not-allowed')
 def not_allowed_handler(userobj):
     return 'you\'re not allowed to do that' +  ' | ' + userobj['given_name']
 
 
 @app.get('/admin')
 @requires_privilege('admins')
+@templated('admin/home')
 def admin_home_handler(userobj):
     # TODO think about what this should contain? Stats? Recent actions?
-    return 'admin/ home '+ ' | ' + userobj['given_name']
-
+    return 'admin home'
 
 @app.get('/admin/users')
 @requires_privilege('admins')

@@ -7,6 +7,13 @@ from .templating import render
 
 import logging
 
+
+"""
+This function is used to retrieve the user cookie it does no checking of the privileges of that user
+
+Args:
+    none
+"""
 def check_user(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -45,12 +52,12 @@ def templated(template=None):
             if ctx is None:
                 ctx = {}
             elif not isinstance(ctx, dict):
-                return ctx
-            else:
-                ctx['userobj'] = kwargs['userobj']
-                if '/' in template_name:
-                    section = template_name.split('/')[0]
-                    ctx['nav'] = section
+                ctx = {'content': ctx}
+            ctx['site_title'] = current_app.config['SITE_TITLE']
+            ctx['userobj'] = kwargs['userobj']
+            if '/' in template_name:
+                section = template_name.split('/')[0]
+                ctx['nav'] = section
             return render(template_name, ctx)
         return decorated_function
     return decorator
