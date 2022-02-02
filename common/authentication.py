@@ -1,8 +1,11 @@
+from typing import List, Dict, Optional, Callable, Union
+
+
 import jwt
 import logging
 
 
-def check_user_privileges(userobj, config, privilege):
+def check_user_privileges(userobj : Dict, config : Dict, privilege : str) -> Dict:
     userobj['privileges'] = []
     if privilege.upper() in config:
         if userobj['email'] in config[privilege.upper()]:
@@ -10,8 +13,7 @@ def check_user_privileges(userobj, config, privilege):
     return userobj
 
 
-
-def get_user_from_cookie(request, config, privilege=None):
+def get_user_from_cookie(request : Callable, config : Dict, privilege : str=None ) -> Union[Dict, None]:
     token = request.cookies.get('cast_user')
     if token:
         try:
