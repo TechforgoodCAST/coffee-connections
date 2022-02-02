@@ -1,1 +1,1 @@
-from .decorators import check_user, requires_privilege
+from .decorators import check_user, requires_privilege, templated

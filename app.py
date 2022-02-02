@@ -10,7 +10,7 @@ import toml
 import logging
 
 
-from common import check_user, requires_privilege
+from common import check_user, requires_privilege, templated
 
 from models import Person, Organization
 
@@ -38,11 +38,9 @@ auth0 = OAuth(app).register(
 
 @app.get('/')
 @check_user
+@templated('index')
 def home_handler(userobj):
-    if userobj:
-        return 'home' + ' | ' + userobj['given_name']
-    return 'home'
-
+    return {'message': 'hello'}
 
 @app.get('/schema')
 def schema_handler():
