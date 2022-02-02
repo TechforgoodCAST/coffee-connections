@@ -12,6 +12,7 @@ pyhumps = "*"
 six = "*"
 Flask = "*"
 Authlib = "*"
+pyjwt = "*"
 
 [dev-packages]
 
