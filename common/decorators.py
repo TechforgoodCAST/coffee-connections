@@ -9,7 +9,7 @@ import logging
 
 
 """
-This function is used to retrieve the user cookie it does no checking of the privileges of that user
+This function is used to retrieve the user cookie. #NOTE it does no checking of the privileges of that user
 
 Args:
     none
@@ -40,7 +40,6 @@ def requires_privilege(privilege=None):
     return decorator
 
 
-
 def templated(template=None):
     def decorator(f):
         @wraps(f)
@@ -54,7 +53,10 @@ def templated(template=None):
             elif not isinstance(ctx, dict):
                 ctx = {'content': ctx}
             ctx['site_title'] = current_app.config['SITE_TITLE']
-            ctx['userobj'] = kwargs['userobj']
+            if 'userobj' in ctx:
+                ctx['userobj'] = kwargs['userobj']
+            else:
+                ctx['userobj'] = None
             if '/' in template_name:
                 section = template_name.split('/')[0]
                 ctx['nav'] = section
