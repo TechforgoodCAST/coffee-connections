@@ -4,6 +4,7 @@ from functools import wraps
 from authlib.integrations.flask_client import OAuth
 from six.moves.urllib.parse import urlencode
 import jwt
+import datetime
 
 
 import toml
@@ -87,7 +88,7 @@ def callback_handler():
         if userinfo['email'] in app.config['USERS']:
             token = jwt.encode(payload=userinfo, key=app.config['JWT_SECRET'], algorithm='HS256')
             response = make_response(redirect('/admin'))
-            response.set_cookie('cast_user', token)
+            response.set_cookie('cast_user', token, expires = datetime.datetime.now() + datetime.timedelta(days=30))
             return response
         else:
             return redirect('/not-allowed')
