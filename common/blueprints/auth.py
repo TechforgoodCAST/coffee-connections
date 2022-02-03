@@ -12,11 +12,9 @@ auth_handlers = Blueprint('auth_handlers', __name__)
 
 
 
-
 @auth_handlers.get('/login')
 def login__handler():
     return current_app.auth0.authorize_redirect(redirect_uri='http://localhost:5000/auth/callback')
-
 
 
 @auth_handlers.get('/logout')
@@ -40,14 +38,14 @@ def callback_handler():
             response.set_cookie('cast_user', token, expires = datetime.datetime.now() + datetime.timedelta(days=30))
             return response
         else:
-            return redirect('/auth/not-allowed')
+            return redirect('/auth/not-allowed/users')
     except:
         return redirect('/')
 
 
-@auth_handlers.get('/not-allowed')
+@auth_handlers.get('/not-allowed/<string:privilege>')
 @templated('not-allowed')
-def not_allowed_handler():
-    return 'you\'re not allowed to do that'
+def not_allowed_handler(privilege):
+    return {'privilege': privilege}
 
 
