@@ -33,9 +33,9 @@ def requires_privilege(privilege=None):
                 if privilege in userobj['privileges']:
                     return f(*args, **kwargs)
                 else:
-                    return redirect('/not-allowed')
+                    return redirect('/auth/not-allowed/'+ privilege)
             else: 
-                return redirect('/login')
+                return redirect('/auth/login')
         return decorated
     return decorator
 
