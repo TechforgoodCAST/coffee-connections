@@ -12,6 +12,8 @@ import logging
 
 
 from common import check_user, requires_privilege, templated, get_hostname
+from common.blueprints.auth import auth_handlers
+
 
 from models import Person, Organization
 
@@ -20,9 +22,10 @@ app = Flask(__name__)
 app.secret_key = app.config['SECRET_KEY']
 # load the config file from the TOML formatted file (not checked into repository)
 app.config.from_file('config.toml', toml.load)
+app.register_blueprint(auth_handlers, url_prefix='/auth')
+    
 
-
-auth0 = OAuth(app).register(
+app.auth0 = OAuth(app).register(
     'auth0',
     client_id = app.config['AUTH0_CLIENT_ID'],
     client_secret = app.config['AUTH0_CLIENT_SECRET'],
@@ -61,46 +64,6 @@ def typeform_webhook_handler():
 def confirm_user_handler():
     # TODO notify Slack of confirmation
     return 'email confirmation'
-
-
-
-@app.get('/login')
-def login__handler():
-    return auth0.authorize_redirect(redirect_uri='http://localhost:5000/callback')
-
-
-
-@app.get('/logout')
-def logout_handler():
-    params = {'returnTo': 'http://localhost:5000/', 'client_id': app.config['AUTH0_CLIENT_ID']}
-    resp = make_response(redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params)))
-    resp.delete_cookie('cast_user')
-    return resp
-
-
-@app.route('/callback')
-def callback_handler():
-    # Handles response from token endpoint
-    try:
-        auth0.authorize_access_token()
-        resp = auth0.get('userinfo')
-        userinfo = resp.json()
-        if userinfo['email'] in app.config['USERS']:
-            token = jwt.encode(payload=userinfo, key=app.config['JWT_SECRET'], algorithm='HS256')
-            response = make_response(redirect('/admin'))
-            response.set_cookie('cast_user', token, expires = datetime.datetime.now() + datetime.timedelta(days=30))
-            return response
-        else:
-            return redirect('/not-allowed')
-    except:
-        return redirect('/')
-
-
-@app.get('/not-allowed')
-@check_user
-@templated('not-allowed')
-def not_allowed_handler(userobj):
-    return 'you\'re not allowed to do that' +  ' | ' + userobj['given_name']
 
 
 @app.get('/admin')
