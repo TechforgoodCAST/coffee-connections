@@ -42,7 +42,7 @@ class PersonModel(ConfigModel):
         description : Optional[str]
         works_for : OrganizationModel
         alumni_of : Optional[List[OrganizationModel]]
-        cc_ValidatedEmail: bool
+        _cc_validated_mail: bool
 
 
 class Model():
