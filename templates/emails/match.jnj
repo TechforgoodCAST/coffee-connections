@@ -1,0 +1,29 @@
+Hi {{a.first_name}} and {{b.first_name}},
+ 
+<b>You’ve been matched to meet for a virtual coffee and chat!</b>
+ 
+You may not be able to meet in person at the moment, but don’t let COVID stop you from expanding your network and your knowledge! Find some time to talk on Zoom, Skype or Google Hangouts; whichever you prefer.
+ 
+Here’s some information about each other:
+ 
+{{a.first_name}} {{a.last_name}}, {{a.job_title}} at {{a.org}}
+{{a.email}} {{a.bio}}
+ 
+{{b.first_name}} {{b.last_name}}, {{b.job_title}} at {{b.org}} {{b.email}} {{b.bio}}
+ 
+It’s over to you now to arrange a time for an online chat. There’s no set time requirement for the chat, so just go with whatever works best for you both – you can always start off with a quick 15-minute coffee break and then arrange a longer chat at a later date if you feel there’s more to share!
+ 
+Similarly, there are no rules on what you should discuss – but you may like to start off with one or more of the below and see where the conversation takes you:
+Any digital resources, services or events that you’ve found useful over recent months
+How your organisation has coped and adapted during lockdown
+Any aspect of your digital, data or design work that you could use a fresh perspective on
+Any contacts that might help the other person with an aspect of their work
+Try to get in touch with each other over the coming week, and arrange to meet within the next four weeks if possible.
+If you feel you can't make this particular round for any reason, please let us know by {{notify_date}} and we’ll arrange a different match for your partner this time.
+ 
+Happy chatting!
+ 
+Tori & the CAST team
+tori@wearecast.org.uk
+ 
+P.S. Here's some guidance on how to use Zoom, Skype or Google Hangouts, and some other handy remote working tips in case it’s useful.
