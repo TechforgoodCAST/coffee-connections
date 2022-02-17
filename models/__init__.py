@@ -2,6 +2,7 @@ from typing import List, Dict, Optional
 from pydantic import BaseModel
 from pydantic import ValidationError
 import humps
+import json
 
 import importlib
 
@@ -41,6 +42,7 @@ class PersonModel(ConfigModel):
         description : Optional[str]
         works_for : OrganizationModel
         alumni_of : Optional[List[OrganizationModel]]
+        cc_ValidatedEmail: bool
 
 
 class Model():
