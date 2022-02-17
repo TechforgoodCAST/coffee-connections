@@ -13,6 +13,7 @@ six = "*"
 Flask = "*"
 Authlib = "*"
 pyjwt = "*"
+sendgrid = "*"
 
 [dev-packages]
 
