@@ -150,3 +150,32 @@ def admin_send_matches_confirm_handler(userobj):
     return 'admin/ send live matches confirmed '+ ' | ' + userobj['given_name']
 
 
+@app.get('/admin/followups/test')
+@requires_privilege('admins')
+def admin_test_followups_handler(userobj):
+    # TODO show form which will approve the sending, make it have some friction
+        return 'admin/ send test matches '+ ' | ' + userobj['given_name']
+
+
+@app.post('/admin/followups/test')
+@requires_privilege('admins')
+def admin_test_followups_confirm_handler(userobj):
+    return 'admin/ send test matches confirmed '+ ' | ' + userobj['given_name']
+
+
+# TODO email permission decorator
+@app.get('/admin/followups/send')
+@requires_privilege('senders')
+def admin_send_followups_handler(userobj):
+    # TODO show form which will approve the sending, make it have some friction
+    return 'admin/ send live matches '+ ' | ' + userobj['given_name']
+
+
+# TODO email permission decorator
+@app.post('/admin/followups/send')
+@requires_privilege('senders')
+def admin_send_followups_confirm_handler(userobj):
+    return 'admin/ send live matches confirmed '+ ' | ' + userobj['given_name']
+
+
+
