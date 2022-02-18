@@ -4,6 +4,12 @@ Hi {{first_name}},
 Welcome, we can’t wait for you to get started! We’ll add your name to the next round of random matches and will put you in touch with your first coffee buddy soon.
 
 
+Please confirm your email address by clicking on the link below
+
+
+{{hostname}}/users/confirm-email/{{uid}}
+
+
 We send out matches every two months, based on feedback from people who took part in a trial. Our next set is due in {{month}}.
 
 
