@@ -1,11 +1,13 @@
 from flask import Flask, redirect, url_for, request, make_response
 
+import asyncio
+
 from functools import wraps
 from authlib.integrations.flask_client import OAuth
 from six.moves.urllib.parse import urlencode
 import jwt
 import datetime
-
+import uuid
 
 import toml
 import logging
@@ -13,6 +15,7 @@ import logging
 
 from common import check_user, requires_privilege, templated, get_hostname
 from common.blueprints.auth import auth_handlers
+from common.providers import sendGridProvider, send_email
 
 
 from models import Person, Organization
@@ -23,7 +26,14 @@ app.secret_key = app.config['SECRET_KEY']
 # load the config file from the TOML formatted file (not checked into repository)
 app.config.from_file('config.toml', toml.load)
 app.register_blueprint(auth_handlers, url_prefix='/auth')
-    
+
+app.config['NAVELEMENTS'] = {}
+
+app.config['NAVSET'] = {
+    'holding':[],
+    'normal':[]
+}
+
 
 app.auth0 = OAuth(app).register(
     'auth0',
@@ -41,7 +51,7 @@ app.auth0 = OAuth(app).register(
 @check_user
 @templated('home')
 def home_handler(userobj):
-    return {'message': 'hello', 'host':get_hostname(request)}
+    return {'message': uuid.uuid4().hex, 'host':get_hostname(request)}
 
 
 @app.get('/schema')
@@ -50,18 +60,26 @@ def schema_handler():
     return person.as_schema()
 
 
+@app.get('/test')
+def test_handler():
+    asyncio.run(send_email('signup', ['chris@wearecast.org.uk'], 'Welcome to Coffee Connections', {'first_name':'Chris', 'hostname':'http://localhost:5000', 'uid': uuid.uuid4().hex}))
+    return 'hello'
+
 @app.get('/users/add')
-def typeform_webhook_handler():
-    # TODO translate data from typeform into a model
-    # TODO persist the model somewhere like Stein
-    # TODO fire signup action
+def signup_handler():
+    # TODO persist the model in InnoDB
+    # TODO fire signup email
     # TODO notify Slack of new signup
-    # TODO think again if we're not using typeform
-    return 'webook from typeform'
+    return 'from user signup form'
 
 
-@app.get('/users/confirm')
-def confirm_user_handler():
+@app.get('/users/add/thank-you')
+def signup_thankyou_handler():
+    return 'thanking user for signup'
+
+
+@app.get('/users/confirm-email/<string:uuid>')
+def confirm_user_handler(uuid):
     # TODO notify Slack of confirmation
     return 'email confirmation'
 
