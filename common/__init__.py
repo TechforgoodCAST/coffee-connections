@@ -1,2 +1,2 @@
-from .decorators import check_user, requires_privilege, templated
+from .decorators import templated
 from .utilities import get_hostname
