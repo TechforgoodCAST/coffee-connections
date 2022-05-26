@@ -130,10 +130,8 @@ def csv_user_loader():
         if person.has_errors():
             print (person.has_errors())
         else:
-            j += 1
             processed_user = person.as_dict()
             processed_users[processed_user['identifier']] = processed_user
-
     return {'users':processed_users, 'count':i-1, 'success':j, 'unique_id_count':len(unique_ids), 'match_count':match_count}
 
 
