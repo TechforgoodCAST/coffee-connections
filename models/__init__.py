@@ -42,6 +42,9 @@ class ConfigModel(BaseModel):
 
 
 class OrganizationModel(ConfigModel):
+        """
+        This model is derived from https://schema.org/Organisation
+        """
         identifier : Optional[str] = Field(
             default=None, title="The identifier for the organisation which is the domain name of the email address"
         )
