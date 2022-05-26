@@ -130,6 +130,12 @@ class PersonModel(ConfigModel):
         cc__id : str = Field(
             default=None, title="The historic Coffee Connections user id"
         )
+        cc__matches : List[UUID] = Field(
+            default = [], title="Previous matches for the person"
+        )
+        cc__runs : List[str] = Field(
+            default = [], title="Previous runs for the person"
+        )
 
 class Model():
 
