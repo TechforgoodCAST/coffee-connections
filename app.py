@@ -16,8 +16,7 @@ from common.providers import sendGridProvider, send_email
 from common.utilities import request_variables
 
 from models import Person, Organization
-
-_models = __import__("models")
+from functions import get_fields
 
 app = Flask(__name__)
 
@@ -40,28 +39,13 @@ def test_handler():
     return 'hello'
 
 
-def get_fields(modelname):
-    _model = getattr(_models,modelname)
-    model = _model({}).as_schema()
-    print (model)
-    fields = []
-    for field in model['properties']:
-        if '$ref' in model['properties'][field]:
-            unpackmodelname = model['properties'][field]['$ref'].replace('#/definitions/','').replace('Model','')
-            unpackfields = get_fields(unpackmodelname)
-            for unpackfield in unpackfields:
-                fields.append(f'{field}-{unpackfield}')
-        else:
-            fields.append(field)
-    return fields
 
 
 @app.get('/users/add')
 def signup_handler():
     # TODO have this called from whatever we're using for sign up
     fields = get_fields('Person')
-    print (fields)
-    
+    print (fields)    
     new_person = Person({
         'given_name':'Chris',
         'family_name':'Thorpe',
