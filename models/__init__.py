@@ -35,6 +35,9 @@ def to_snake_case(string: str) -> str:
 def now():
     return datetime.now().isoformat()
 
+def uuid_hex():
+    return uuid4().hex
+
 class ConfigModel(BaseModel):
     pass
     #class Config:
@@ -72,7 +75,7 @@ class PersonModel(ConfigModel):
 
         Fields starting with "cc__" are namespaced extensions of the model specific to Coffee Connections
         """
-        identifier : UUID = Field(default_factory=uuid4)
+        identifier : str = Field(default_factory=uuid_hex)
         given_name : str = Field(
             default=None, title="The given name of the person"
         )
@@ -109,8 +112,8 @@ class PersonModel(ConfigModel):
         cc__validated_mail : bool = Field(
             default=False, title="Whether the person has validated their email address"
         )
-        cc__approve_secret : UUID = Field(
-            default_factory=uuid4, title="The secret for the email address validation"
+        cc__approve_secret : str = Field(
+            default_factory=uuid_hex, title="The secret for the email address validation"
         )
         cc__created_at : str = Field(
             default_factory=now, title="The creation timestamp for the person record as an isoformat datetimestring"
@@ -130,7 +133,7 @@ class PersonModel(ConfigModel):
         cc__id : str = Field(
             default=None, title="The historic Coffee Connections user id"
         )
-        cc__matches : List[UUID] = Field(
+        cc__matches : List[str] = Field(
             default = [], title="Previous matches for the person"
         )
         cc__runs : List[str] = Field(
