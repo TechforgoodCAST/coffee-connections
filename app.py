@@ -71,20 +71,20 @@ def signup_handler():
 def csv_user_loader():
     i = 0
     j = 0
-    all_users = {}
+    historic_users = {}
     matches = {}
     unique_ids = []
     match_count = 0
     with open('livedata/cc_users.csv', newline='') as csvfile:
-        users = csv.reader(csvfile, delimiter=',')
-        for user in users:
+        cc_historic_users = csv.reader(csvfile, delimiter=',')
+        for historic_user in cc_historic_users:
             if i == 0:
-                fields = map_historic_data_fields(user)
+                fields = map_historic_data_fields(historic_user)
                 print (fields)
                 i += 1
             else:
-                if len(user) > 0:
-                    userdict = {key:value for (key, value) in list(zip(fields, user))}
+                if len(historic_user) > 0:
+                    userdict = {key:value for (key, value) in list(zip(fields, historic_user))}
                     id = userdict['cc__id']
                     unique_ids.append(id)
                     if len(userdict['works_for-name']) > 0:
@@ -100,7 +100,7 @@ def csv_user_loader():
                         print (person.has_errors())
                     else:
                         j += 1
-                        all_users[id] = person.as_dict()
+                        historic_users[id] = person.as_dict()
                     i += 1
     with open('livedata/cc_matches.csv', newline='') as csvfile:
         previous_matches = csv.reader(csvfile, delimiter=',')
@@ -112,28 +112,29 @@ def csv_user_loader():
                 match_2 = previous_match[2]
                 run = previous_match[3]
                 try:
-                    all_users[match_1]['cc__matches'].append(all_users[match_2]['identifier'])
-                    if run not in all_users[match_1]['cc__runs']:
-                        all_users[match_1]['cc__runs'].append(run)
-                    all_users[match_2]['cc__matches'].append(all_users[match_1]['identifier'])
-                    if run not in all_users[match_2]['cc__runs']:
-                        all_users[match_2]['cc__runs'].append(run)
+                    historic_users[match_1]['cc__matches'].append(historic_users[match_2]['identifier'])
+                    if run not in historic_users[match_1]['cc__runs']:
+                        historic_users[match_1]['cc__runs'].append(run)
+                    historic_users[match_2]['cc__matches'].append(historic_users[match_1]['identifier'])
+                    if run not in historic_users[match_2]['cc__runs']:
+                        historic_users[match_2]['cc__runs'].append(run)
                     match_count += 1
                 except:
                     print ((match_1, match_2, run))
 
             a += 1
-    all_people = []
-    for id in all_users:
-        persondict = all_users[id]
+    processed_users = {}
+    for id in historic_users:
+        persondict = historic_users[id]
         person = Person(persondict)
         if person.has_errors():
             print (person.has_errors())
         else:
             j += 1
-            all_people.append(person.as_dict())
+            processed_user = person.as_dict()
+            processed_users[processed_user['identifier']] = processed_user
 
-    return {'users':all_people, 'count':i-1, 'success':j, 'unique_id_count':len(unique_ids), 'match_count':match_count}
+    return {'users':processed_users, 'count':i-1, 'success':j, 'unique_id_count':len(unique_ids), 'match_count':match_count}
 
 
 @app.get('/users/confirm-email/<string:uuid>')
