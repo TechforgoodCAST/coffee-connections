@@ -8,6 +8,7 @@ import uuid
 
 import toml
 import logging
+import csv
 
 import importlib
 
@@ -16,7 +17,7 @@ from common.providers import sendGridProvider, send_email
 from common.utilities import request_variables
 
 from models import Person, Organization
-from functions import get_fields
+from functions import get_fields, map_historic_data_fields
 
 app = Flask(__name__)
 
@@ -37,8 +38,6 @@ def schema_handler():
 def test_handler():
     asyncio.run(send_email('signup', ['chris@wearecast.org.uk'], 'Welcome to Coffee Connections', {'first_name':'Chris', 'hostname':'http://localhost:5000', 'uid': uuid.uuid4().hex}))
     return 'hello'
-
-
 
 
 @app.get('/users/add')
@@ -66,6 +65,75 @@ def signup_handler():
     # TODO fire signup email
     # TODO notify Slack of new signup
     return new_person.as_json()
+
+
+@app.get('/users/load')
+def csv_user_loader():
+    i = 0
+    j = 0
+    all_users = {}
+    matches = {}
+    unique_ids = []
+    match_count = 0
+    with open('livedata/cc_users.csv', newline='') as csvfile:
+        users = csv.reader(csvfile, delimiter=',')
+        for user in users:
+            if i == 0:
+                fields = map_historic_data_fields(user)
+                print (fields)
+                i += 1
+            else:
+                if len(user) > 0:
+                    userdict = {key:value for (key, value) in list(zip(fields, user))}
+                    id = userdict['cc__id']
+                    unique_ids.append(id)
+                    if len(userdict['works_for-name']) > 0:
+                        userdict['works_for'] = {
+                            'identifier':userdict['works_for-identifier'],
+                            'name': userdict['works_for-name']
+                        }
+                    del userdict['works_for-name']
+                    del userdict['works_for-identifier']
+                    userdict['cc__validated_mail'] = True
+                    person = Person(userdict)
+                    if person.has_errors():
+                        print (person.has_errors())
+                    else:
+                        j += 1
+                        all_users[id] = person.as_dict()
+                    i += 1
+    with open('livedata/cc_matches.csv', newline='') as csvfile:
+        previous_matches = csv.reader(csvfile, delimiter=',')
+        print(matches)
+        a = 0
+        for previous_match in previous_matches:
+            if a > 0:
+                match_1 = previous_match[1]
+                match_2 = previous_match[2]
+                run = previous_match[3]
+                try:
+                    all_users[match_1]['cc__matches'].append(all_users[match_2]['identifier'])
+                    if run not in all_users[match_1]['cc__runs']:
+                        all_users[match_1]['cc__runs'].append(run)
+                    all_users[match_2]['cc__matches'].append(all_users[match_1]['identifier'])
+                    if run not in all_users[match_2]['cc__runs']:
+                        all_users[match_2]['cc__runs'].append(run)
+                    match_count += 1
+                except:
+                    print ((match_1, match_2, run))
+
+            a += 1
+    all_people = []
+    for id in all_users:
+        persondict = all_users[id]
+        person = Person(persondict)
+        if person.has_errors():
+            print (person.has_errors())
+        else:
+            j += 1
+            all_people.append(person.as_dict())
+
+    return {'users':all_people, 'count':i-1, 'success':j, 'unique_id_count':len(unique_ids), 'match_count':match_count}
 
 
 @app.get('/users/confirm-email/<string:uuid>')
