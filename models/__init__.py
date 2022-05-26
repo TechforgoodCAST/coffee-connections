@@ -109,9 +109,6 @@ class PersonModel(ConfigModel):
         cc__approve_secret : UUID = Field(
             default_factory=uuid4, title="The secret for the email address validation"
         )
-        cc__region : Optional[str] = Field(
-            default=None, title="The region in which the person works"
-        )
         cc__created_at : str = Field(
             default_factory=now, title="The creation timestamp for the person record as an isoformat datetimestring"
         )
@@ -126,6 +123,9 @@ class PersonModel(ConfigModel):
         )
         cc__consent_text : str = Field(
             default=None, title="The text of the consent form"
+        )
+        cc__id : str = Field(
+            default=None, title="The historic Coffee Connections user id"
         )
 
 class Model():
