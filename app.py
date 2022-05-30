@@ -10,6 +10,7 @@ import csv
 
 from common.providers import sendGridProvider, send_email
 from common.utilities import request_variables
+from common.decorators import templated
 
 from models import Person, Organization
 from functions import get_fields, map_historic_data_fields
@@ -19,12 +20,52 @@ app = Flask(__name__)
 # load the config file from the TOML formatted file (not checked into repository)
 app.config.from_file('config.toml', toml.load)
 
+app.config['NAVELEMENTS'] = {
+    'home': {
+            'nav': 'home',
+            'url': '/',
+            'label': 'Home'
+        },
+    'signup': {
+            'nav': 'signup',
+            'url': '/users/add',
+            'label': 'Sign up'
+        },
+    'faq': {
+            'nav': 'faq',
+            'url': '/faq',
+            'label': 'FAQ'
+    }
+}
+
+app.config['NAVSET'] = {
+    'holding': [],
+    'normal': ['home','signup','faq']
+}
+
+
+
+
+
 
 
 @app.get('/')
+@templated('web/home')
 def home_handler():
+    """
+    This function outputs the homepage
+    """
     return {}
 
+
+@app.get('/faq/')
+@app.get('/faq')
+@templated('web/faq')
+def faq_handler():
+    """
+    This function outputs the FAQ page
+    """
+    return {}
 
 @app.get('/schema')
 def schema_handler():
@@ -35,14 +76,21 @@ def schema_handler():
     return person.as_schema()
 
 
+@app.get('/users/add/')
 @app.get('/users/add')
 def signup_form_handler():
+    """
+    This function outputs the signup form
+    """
     fields = get_fields('Person')
     field_types = Person({}).form_field_types()
+    print(fields)
+    print (field_types)
     return {}
 
 
 
+@app.post('/users/add/')
 @app.post('/users/add')
 def signup_action_handler():
     """
@@ -50,9 +98,7 @@ def signup_action_handler():
     """
     # TODO have this called from whatever we're using for sign up
     fields = get_fields('Person')
-    print(fields)
     field_types = Person({}).form_field_types()
-    print (field_types)
 
     new_person = Person({
         'given_name':'Chris',

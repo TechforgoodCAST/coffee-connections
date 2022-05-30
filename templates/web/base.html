@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" >
+  <head>
+    <title>Coffee Connections {% block title %}- CAST{% endblock%} </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="img/logo.png"/>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;600&display=swap" rel="stylesheet">
+    <link href="/static/stylesheets/style.css?v=0.1" rel="stylesheet">
+    
+    <style>
+      .logo {
+          height: 85px;
+          margin-bottom: 10px;
+        }
+
+        p {
+          line-height: 1.7;
+        }
+    </style>      
+  </head>
+  <body>
+  {% include "web/partials/header.html" %}
+    <main>
+      {% block main %}{% endblock%}
+      
+    </main>
+  {% include "web/partials/footer.html" %}
+  </body>
+</html>

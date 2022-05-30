@@ -1,0 +1,17 @@
+<header>
+    <div class="header-container">
+        <h1 class="visually-hidden">Coffee Connections</h1>
+        <div class="header-bottom flex space-between">
+            <ul class="flex margin-0">
+                {% for navitem in navelements %}
+                  <li {% if nav == navitem.nav %}class="active"{% endif %}>
+                    <a  href="{{navitem.url}}/">{{navitem.label}}</a>
+                  </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+  </header>
+  
+  
+  
