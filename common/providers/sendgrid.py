@@ -48,3 +48,10 @@ class sendGridProvider():
 
 async def send_email(template, to_emails, subject, variables):
     return sendGridProvider().send_templated_message(template, to_emails, subject, variables)
+
+
+async def fake_send_email(template, to_emails, subject, variables):
+    message, code = render('emails/{template}.jnj'.format(template=template), variables, format='email')
+    message = markdown.markdown(message)
+    print (message)
+    return message
