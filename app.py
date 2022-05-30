@@ -20,6 +20,12 @@ app = Flask(__name__)
 app.config.from_file('config.toml', toml.load)
 
 
+
+@app.get('/')
+def home_handler():
+    return {}
+
+
 @app.get('/schema')
 def schema_handler():
     """
@@ -29,22 +35,25 @@ def schema_handler():
     return person.as_schema()
 
 
-@app.get('/test')
-def test_handler():
-    asyncio.run(send_email('signup', ['chris@wearecast.org.uk'], 'Welcome to Coffee Connections', {'first_name':'Chris', 'hostname':'http://localhost:5000', 'uid': uuid.uuid4().hex}))
-    return 'hello'
-
-
 @app.get('/users/add')
-def signup_handler():
+def signup_form_handler():
+    fields = get_fields('Person')
+    field_types = Person({}).form_field_types()
+    return {}
+
+
+
+@app.post('/users/add')
+def signup_action_handler():
     """
     This function takes data from a signup form and creates a user
     """
-
     # TODO have this called from whatever we're using for sign up
     fields = get_fields('Person')
+    print(fields)
+    field_types = Person({}).form_field_types()
+    print (field_types)
 
-    print (fields)    
     new_person = Person({
         'given_name':'Chris',
         'family_name':'Thorpe',
@@ -52,7 +61,7 @@ def signup_handler():
         'job_title':'Head of Technology',
         'description':'An open data and open standards and reuse nerd',
         'knows_about': 'Open standards, open data, reuse, some technology, digital strategy',
-        'work_location':'Remote',
+        'work_location':'South East',
         'seeks': 'Enlightenment, peace and tranquility.',
         'cc__digital_journey': 'It\'s embedded into what we do across all areas and our daily practices',
         'cc__validated_mail': True,
@@ -65,11 +74,102 @@ def signup_handler():
             'name': 'CAST'
         }
     })
-    print (new_person.form_field_types())
-    # TODO persist the model in InnoDB or similar
-    # TODO fire signup email
-    # TODO notify Slack of new signup
-    return new_person.as_json()
+    if new_person.has_errors():
+        errors = new_person.has_errors()
+    else:
+        errors = None
+        # TODO persist the model in InnoDB or similar
+        # TODO notify Slack of new signup
+        # TODO fire signup email
+        #asyncio.run(send_email('signup', [new_person.as_dict()['email']], 'Welcome to Coffee Connections', {'hostname':'http://localhost:5000', 'person': new_person.as_dict()}))
+    return {'errors': errors, 'person':new_person.as_json()}
+
+
+
+@app.get('/users/confirm-email/<string:identifier>/<string:email_confirmation_secret>')
+def confirm_user_handler(identifier, email_confirmation_secret):
+    # TODO get user
+    # TODO show as a web page, style to be defined
+    # TODO notify Slack of confirmation
+    return {'identifier':identifier, 'secret':email_confirmation_secret, 'validated':True}
+
+
+@app.get('/admin/users/approve/<string:identifier>/<string:approve_user_secret>')
+def admin_user_approve_handler(identifier, approve_user_secret):
+    # TODO approve of a user of coffee connections - as a button in Slack
+    return {'identifier':identifier, 'secret':approve_user_secret, 'validated':True}
+
+
+@app.get('/admin/matches/create')
+# TODO think about what this does. Does it create a new match table? Does it populate with guessed matches
+def admin_create_matches_handler():
+    return 'admin/ create matches'
+
+
+@app.get('/admin/matches/view')
+def admin_view_matches_handler():
+    # TODO show matches
+    return 'admin/ view matches'
+
+
+@app.get('/admin/matches/test')
+def admin_test_matches_handler():
+    # TODO show form which will approve the sending, make it have some friction
+    return 'admin/ send test matches'
+
+
+@app.get('/admin/matches/test/confirmed')
+def admin_test_matches_confirm_handler():
+    return 'admin/ send test matches confirmed'
+
+
+@app.get('/admin/matches/send')
+def admin_send_matches_handler():
+    # TODO show form which will approve the sending, make it have some friction
+    return 'admin/ send live matches'
+
+
+@app.get('/admin/matches/send/confirmed')
+def admin_send_matches_confirm_handler():
+    return 'admin/ send live matches confirmed'
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.get('/admin/followups/test')
+def admin_test_followups_handler():
+    # TODO show form in Slack which will approve the sending, make it have some friction
+    return 'admin/ send test matches'
+
+
+@app.get('/admin/followups/test/confirmed')
+def admin_test_followups_confirm_handler():
+    return 'admin/ send test matches confirmed'
+
+
+@app.get('/admin/followups/send')
+def admin_send_followups_handler():
+    # TODO show form in Slack which will approve the sending, make it have some friction
+    return 'admin/ send live matches'
+
+
+@app.get('/admin/followups/send/confirmed')
+def admin_send_followups_confirm_handler():
+    return 'admin/ send live matches confirmed'
+
+
+
+
+
 
 
 @app.get('/users/import')
@@ -160,77 +260,4 @@ def csv_user_loader():
     match_row_count -= 1
     row_count -=1
     return {'users':processed_users, 'row_count':row_count, 'import_count':import_count, 'unique_id_count':len(unique_ids), 'match_count':match_count, 'match_row_count':match_row_count, 'match_error_count':match_error_count}
-
-
-@app.get('/users/confirm-email/<string:uuid>')
-def confirm_user_handler(uuid):
-    # TODO show as a web page, style to be defined
-    # TODO notify Slack of confirmation
-    return 'email confirmation'
-
-
-@app.get('/admin/users/approve/<string:identifier>')
-def admin_user_approve_handler(identifier):
-    # TODO approve of a user of coffee connections - as a button in Slack
-    return 'admin/ approve user' + identifier
-
-
-@app.get('/admin/matches/create')
-# TODO think about what this does. Does it create a new match table? Does it populate with guessed matches
-def admin_create_matches_handler():
-    return 'admin/ create matches'
-
-
-@app.get('/admin/matches/view')
-def admin_view_matches_handler():
-    # TODO show matches
-    return 'admin/ view matches'
-
-
-@app.get('/admin/matches/test')
-def admin_test_matches_handler():
-    # TODO show form which will approve the sending, make it have some friction
-    return 'admin/ send test matches'
-
-
-@app.get('/admin/matches/test/confirmed')
-def admin_test_matches_confirm_handler():
-    return 'admin/ send test matches confirmed'
-
-
-@app.get('/admin/matches/send')
-def admin_send_matches_handler():
-    # TODO show form which will approve the sending, make it have some friction
-    return 'admin/ send live matches'
-
-
-@app.get('/admin/matches/send/confirmed')
-def admin_send_matches_confirm_handler():
-    return 'admin/ send live matches confirmed'
-
-
-@app.get('/admin/followups/test')
-def admin_test_followups_handler():
-    # TODO show form in Slack which will approve the sending, make it have some friction
-    return 'admin/ send test matches'
-
-
-@app.get('/admin/followups/test/confirmed')
-def admin_test_followups_confirm_handler():
-    return 'admin/ send test matches confirmed'
-
-
-# TODO email permission decorator
-@app.get('/admin/followups/send')
-def admin_send_followups_handler():
-    # TODO show form in Slack which will approve the sending, make it have some friction
-    return 'admin/ send live matches'
-
-
-# TODO email permission decorator
-@app.get('/admin/followups/send/confirmed')
-def admin_send_followups_confirm_handler():
-    return 'admin/ send live matches confirmed'
-
-
 
