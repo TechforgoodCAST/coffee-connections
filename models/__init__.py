@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Literal
 from pydantic import BaseModel, Field
 from pydantic import ValidationError
 from datetime import datetime
@@ -94,7 +94,21 @@ class PersonModel(ConfigModel):
         knows_about : Optional[str] = Field(
             default=None, title="What the person knows about and are willing to share with their connections"
         )
-        work_location : str = Field(
+        work_location : Literal[
+            'East Midlands',
+            'East of England',
+            'London',
+            'North East',
+            'North West',
+            'Northern Ireland',
+            'Scotland',
+            'South East',
+            'South West',
+            'Wales',
+            'West Midlands',
+            'Yorkshire and the Humber',
+            'Other'
+        ] = Field(
             default=None, title="Where the person is based"
         )
         description : Optional[str] = Field(
@@ -106,7 +120,13 @@ class PersonModel(ConfigModel):
         alumni_of : Optional[List[OrganizationModel]] = Field(
             default=None, title="Organisation the person has worked for previously"
         )
-        cc__digital_journey : Optional[str] = Field(
+        cc__digital_journey : Optional[Literal[
+            'Tech is not a priority for us',
+            'We don\'t know where to start',
+            'We\'re beginning to experiment with tech',
+            'Tech is a strategic priority and progress is happening',
+            'It\'s embedded into what we do across all areas and our daily practices'
+        ]] = Field(
             default=None, title="The digital journey of the person"
         )
         cc__validated_mail : bool = Field(
