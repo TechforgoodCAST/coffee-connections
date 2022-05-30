@@ -40,7 +40,7 @@ def map_historic_data_fields(fields:List) -> List:
         List : mapped fields, a list of the schema.org derived field names
     """
     mapping = {
-        'id': 'cc__id',
+        'id': 'cc__historic_id',
         'first_name': 'given_name',
         'last_name': 'family_name',
         'org': 'works_for-name',

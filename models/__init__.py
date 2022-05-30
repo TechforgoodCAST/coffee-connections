@@ -113,6 +113,9 @@ class PersonModel(ConfigModel):
             default=False, title="Whether the person has validated their email address"
         )
         cc__approve_secret : str = Field(
+            default_factory=uuid_hex, title="The secret for the user approval"
+        )
+        cc__email_confirm_secret : str = Field(
             default_factory=uuid_hex, title="The secret for the email address validation"
         )
         cc__created_at : str = Field(
@@ -130,7 +133,7 @@ class PersonModel(ConfigModel):
         cc__consent_text : str = Field(
             default=None, title="The text of the consent form"
         )
-        cc__id : str = Field(
+        cc__historic_id : str = Field(
             default=None, title="The historic Coffee Connections user id"
         )
         cc__matches : List[str] = Field(
