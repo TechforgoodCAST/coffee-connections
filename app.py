@@ -23,7 +23,7 @@ app.config.from_file('config.toml', toml.load)
 app.config['NAVELEMENTS'] = {
     'home': {
             'nav': 'home',
-            'url': '/',
+            'url': '',
             'label': 'Home'
         },
     'signup': {
